@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Alpha Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,500;1,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;-webkit-text-size-adjust:100%}
+:root{
+  --bg:#f0f2f5;--surface:#fff;--surface2:#f7f8fa;
+  --border:#e4e8ed;--border2:#d0d5dd;
+  --text:#0d1117;--text2:#3d4a56;--text3:#8a96a3;--text4:#b0bac4;
+  --cyan:#00b4d8;--cyan-bg:#e8f8fc;
+  --red:#e03e3e;--red-bg:#fef0f0;
+  --green:#0da86a;--green-bg:#edfaf3;
+  --gold:#d4870f;--gold-bg:#fef6e7;
+  --purple:#6b4fbb;--purple-bg:#f2effc;
+  --orange:#d9601a;--orange-bg:#fef3ec;
+  --navy:#1d4ed8;--navy-bg:#eff4ff;
+  --sans:'Sora',sans-serif;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'JetBrains Mono',monospace;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 2px 8px rgba(0,0,0,.10),0 8px 24px rgba(0,0,0,.07);
+  --r:14px;--rsm:8px;--rpill:100px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.header{position:sticky;top:0;z-index:300;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:56px;padding:0 16px;display:flex;align-items:center;gap:12px}
+.logo-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#0d1117,#1e2a35);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.logo-alpha{font-weight:700;font-size:1.1rem;color:var(--text);letter-spacing:-.01em}
+.logo-ops{font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--cyan)}
+.hsearch{flex:1;min-width:0;position:relative}
+.hsearch input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--rpill);padding:7px 14px 7px 34px;font-family:var(--sans);font-size:.82rem;color:var(--text);outline:none;transition:border-color .15s}
+.hsearch input:focus{border-color:var(--cyan);background:#fff}
+.hsearch input::placeholder{color:var(--text4)}
+.si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text4);font-size:.82rem;pointer-events:none}
+.hactions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ibtn{width:32px;height:32px;border-radius:var(--rsm);border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem;color:var(--text2);transition:all .15s;user-select:none}
+.ibtn:hover{background:var(--bg);border-color:var(--border2)}
+
+/* ── SYSTEM OVERVIEW STRIP ── */
+.sysbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px}
+.sysbar-item{display:flex;flex-direction:column;align-items:center;padding:6px 4px;position:relative}
+.sysbar-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--border)}
+.sys-val{font-family:var(--mono);font-size:1.1rem;font-weight:700;line-height:1;margin-bottom:3px}
+.sys-lbl{font-family:var(--mono);font-size:.55rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text4)}
+
+/* ── TABS ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{background:none;border:none;border-bottom:2.5px solid transparent;padding:11px 16px;font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--text3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:color .15s;flex-shrink:0}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.tbadge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;border-radius:var(--rpill);font-size:.58rem;font-weight:700;padding:0 4px;background:var(--cyan);color:#fff}
+.tab:nth-child(2) .tbadge{background:var(--purple)}
+.tab:nth-child(3) .tbadge{background:var(--red)}
+.tab:nth-child(4) .tbadge{background:var(--gold)}
+
+/* ── ANALYST BAR ── */
+.abar{background:var(--surface);border-bottom:1px solid var(--border);padding:11px 0}
+.abar-lbl{font-family:var(--mono);font-size:.56rem;font-weight:500;letter-spacing:.1em;color:var(--text4);text-transform:uppercase;padding:0 16px;margin-bottom:8px}
+.abar-scroll{display:flex;gap:9px;padding:2px 16px;overflow-x:auto;scrollbar-width:none}
+.abar-scroll::-webkit-scrollbar{display:none}
+.av-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0}
+.av{width:50px;height:50px;border-radius:50%;border:2.5px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:border-color .15s,box-shadow .15s}
+.av.active{border-width:2.5px}
+.av-name{font-family:var(--sans);font-size:.58rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text2)}
+.av-cnt{font-family:var(--mono);font-size:.58rem;color:var(--text4);margin-top:-2px}
+
+/* ── FEED ── */
+.feed{max-width:600px;margin:0 auto;padding:14px 12px 56px}
+
+/* ── SIGNAL CARD ── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);border-left:4px solid transparent;padding:15px;margin-bottom:11px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s;animation:cin .3s ease both}
+@keyframes cin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.ctop{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.cav{width:42px;height:42px;border-radius:50%;border:2.5px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.cmeta{flex:1;min-width:0}
+.cmeta-top{display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap}
+.cname{font-weight:700;font-size:.85rem}
+.cpill{font-size:.6rem;font-weight:600;letter-spacing:.05em;padding:2px 8px;border-radius:var(--rpill);text-transform:uppercase}
+.pill-signal{background:rgba(0,180,216,.12);color:var(--cyan)}
+.pill-alert{background:rgba(224,62,62,.12);color:var(--red)}
+.pill-opportunity{background:rgba(13,168,106,.12);color:var(--green)}
+.pill-breakthrough{background:rgba(107,79,187,.12);color:var(--purple)}
+.cdomain{font-size:.72rem;color:var(--text3)}
+.ctime{font-size:.67rem;color:var(--text4);margin-left:auto;font-family:var(--mono);flex-shrink:0}
+.cbody{font-size:.91rem;line-height:1.65;color:var(--text);margin-bottom:11px}
+.cfoot{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cbar-wrap{display:flex;align-items:center;gap:5px}
+.cbar{width:78px;height:4px;background:var(--border);border-radius:var(--rpill);overflow:hidden}
+.cfill{height:100%;border-radius:var(--rpill)}
+.cpct{font-family:var(--mono);font-size:.68rem;font-weight:600}
+.csrc{font-size:.68rem;color:var(--text4)}
+.ctags{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.tag{font-size:.6rem;color:var(--text3);background:var(--bg);border:1px solid var(--border);border-radius:var(--rpill);padding:2px 7px}
+
+/* ── GRID CARD ── */
+.gcard{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);animation:cin .3s ease both}
+.gcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.gcard-entity{display:flex;align-items:center;gap:7px;min-width:0}
+.gcard-type{font-family:var(--mono);font-size:.58rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;flex-shrink:0}
+.gcard-val{font-weight:700;font-size:.95rem;color:var(--text);text-transform:capitalize}
+.gcard-score{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--purple);flex-shrink:0}
+.gcard-analysts{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.gchip{font-family:var(--mono);font-size:.58rem;font-weight:600;padding:2px 8px;border-radius:var(--rpill);border:1.5px solid}
+.gcard-signals{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.gsig{font-size:.77rem;line-height:1.5;color:var(--text3);padding:6px 9px;background:var(--bg);border-radius:var(--rsm);border-left:3px solid var(--border2)}
+.gcard-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gcard-stat{font-family:var(--mono);font-size:.6rem;color:var(--text4)}
+.sev-pill{font-family:var(--mono);font-size:.58rem;font-weight:700;padding:2px 7px;border-radius:var(--rpill);text-transform:uppercase}
+.sev-LOW{background:rgba(13,168,106,.1);color:var(--green)}
+.sev-MEDIUM{background:rgba(212,135,15,.12);color:var(--gold)}
+.sev-HIGH{background:rgba(224,62,62,.12);color:var(--red)}
+.sev-CRITICAL{background:rgba(107,79,187,.12);color:var(--purple)}
+.etype-countries{background:rgba(29,78,216,.1);color:var(--navy)}
+.etype-regions{background:rgba(8,145,178,.1);color:var(--cyan)}
+.etype-sectors{background:rgba(13,168,106,.1);color:var(--green)}
+.etype-commodities{background:rgba(212,135,15,.12);color:var(--gold)}
+.etype-event_types{background:rgba(224,62,62,.1);color:var(--red)}
+.etype-companies{background:rgba(107,79,187,.1);color:var(--purple)}
+.etype-asset_classes{background:rgba(217,96,26,.1);color:var(--orange)}
+
+/* ── PRESSURE CARD ── */
+.pzone{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:11px;box-shadow:var(--shadow);animation:cin .3s ease both}
+.pzone-bar{height:5px}
+.heat-CRITICAL{background:linear-gradient(90deg,#9333ea,#e03e3e)}
+.heat-HIGH{background:linear-gradient(90deg,#e03e3e,#d4870f)}
+.heat-ELEVATED{background:linear-gradient(90deg,#d4870f,#0da86a)}
+.heat-MONITORING{background:linear-gradient(90deg,#0da86a,#00b4d8)}
+.pzone-body{padding:14px}
+.pzone-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:10px}
+.pzone-geo{font-weight:700;font-size:1.05rem;color:var(--text);text-transform:capitalize}
+.pzone-sub{font-size:.73rem;color:var(--text3);margin-top:2px}
+.heat-pill{font-family:var(--mono);font-size:.6rem;font-weight:700;padding:3px 9px;border-radius:var(--rpill);text-transform:uppercase;flex-shrink:0}
+.hp-CRITICAL{background:rgba(147,51,234,.12);color:#9333ea}
+.hp-HIGH{background:rgba(224,62,62,.1);color:var(--red)}
+.hp-ELEVATED{background:rgba(212,135,15,.12);color:var(--gold)}
+.hp-MONITORING{background:rgba(0,180,216,.1);color:var(--cyan)}
+.pzone-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.pm{background:var(--bg);border-radius:var(--rsm);padding:8px;text-align:center}
+.pm-val{font-family:var(--mono);font-size:.92rem;font-weight:700;color:var(--text);display:block}
+.pm-lbl{font-size:.6rem;color:var(--text3);font-weight:500}
+.pzone-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.domain-chip{font-family:var(--mono);font-size:.56rem;padding:2px 7px;border-radius:var(--rpill);background:var(--bg);border:1px solid var(--border);color:var(--text3);text-transform:uppercase}
+.event-chip{font-size:.63rem;padding:2px 8px;border-radius:var(--rpill);background:rgba(224,62,62,.07);border:1px solid rgba(224,62,62,.15);color:var(--red)}
+
+/* ── NEXUS BRIEF ── */
+.nexus{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow-lg);animation:cin .35s ease both}
+.nexus-topbar{height:5px;background:linear-gradient(90deg,#6b4fbb,#00b4d8,#0da86a)}
+.nexus-inner{padding:18px}
+.nexus-eyebrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nexus-label{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple)}
+.nexus-time{font-family:var(--mono);font-size:.6rem;color:var(--text4)}
+.nexus-title{font-family:var(--serif);font-style:italic;font-size:1.28rem;font-weight:700;line-height:1.3;color:var(--text);margin-bottom:12px}
+.nexus-synthesis{font-size:.88rem;line-height:1.7;color:var(--text2);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.nexus-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px;align-items:center}
+.nchip{font-family:var(--mono);font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:var(--rpill);border:1.5px solid}
+.tier-pill{font-family:var(--mono);font-size:.58rem;font-weight:700;padding:3px 9px;border-radius:var(--rpill);text-transform:uppercase}
+.tier-early{background:rgba(224,62,62,.1);color:var(--red)}
+.tier-developing{background:rgba(212,135,15,.12);color:var(--gold)}
+.tier-confirmed{background:rgba(13,168,106,.1);color:var(--green)}
+.tier-high{background:rgba(0,180,216,.1);color:var(--cyan)}
+.nexus-fields{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.nfield{background:var(--bg);border-radius:var(--rsm);padding:11px 13px;border-left:3px solid var(--border2)}
+.nfield.so-what{border-left-color:var(--cyan);background:var(--cyan-bg)}
+.nfield.who{border-left-color:var(--purple)}
+.nfield.timeline{border-left-color:var(--gold)}
+.nfield.precedent{border-left-color:var(--orange)}
+.nfield.next-steps{border-left-color:var(--green)}
+.nfield.watch{border-left-color:var(--red)}
+.nf-lbl{font-family:var(--mono);font-size:.56rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text4);margin-bottom:4px}
+.nf-body{font-size:.83rem;line-height:1.6;color:var(--text2)}
+.nfield.so-what .nf-body{color:var(--text);font-weight:500}
+.nexus-footer{padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.nfm{display:flex;gap:4px;align-items:baseline}
+.nfm-lbl{font-family:var(--mono);font-size:.56rem;color:var(--text4);letter-spacing:.06em;text-transform:uppercase}
+.nfm-val{font-family:var(--mono);font-size:.73rem;font-weight:600}
+.nuncert{font-size:.68rem;color:var(--text4);font-style:italic}
+.trigger-tag{font-family:var(--mono);font-size:.56rem;padding:2px 7px;border-radius:4px;background:var(--purple-bg);color:var(--purple);border:1px solid rgba(107,79,187,.2);margin-left:auto}
+
+/* ── INTRO BANNERS ── */
+.intro-banner{border-radius:var(--r);border:1px solid;padding:14px;margin-bottom:13px;text-align:center}
+.ib-title{font-family:var(--serif);font-style:italic;font-size:.95rem;margin-bottom:5px}
+.ib-body{font-size:.75rem;line-height:1.6;max-width:460px;margin:0 auto}
+
+/* ── LOADING / EMPTY ── */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 16px;gap:12px}
+.ldots{display:flex;gap:5px}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:db 1.2s ease-in-out infinite}
+.ldot:nth-child(2){animation-delay:.15s}.ldot:nth-child(3){animation-delay:.3s}
+@keyframes db{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+.ltxt{font-size:.77rem;color:var(--text3);font-family:var(--mono);letter-spacing:.06em}
+.empty-s{text-align:center;padding:36px 16px}
+.ei{font-size:2.5rem;margin-bottom:9px;opacity:.3}
+.et{font-size:.78rem;color:var(--text3);font-family:var(--mono);letter-spacing:.04em}
+.load-more{display:block;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;margin-top:4px;box-shadow:var(--shadow)}
+.load-more:hover{background:var(--bg);border-color:var(--border2);color:var(--cyan)}
+
+/* ── DARK MODE ── */
+body.dark{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#21262d;--border2:#30363d;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;--text4:#484f58}
+
+/* ── SSE LIVE INDICATOR ── */
+.live-dot{width:8px;height:8px;border-radius:50%;background:#e03e3e;flex-shrink:0;transition:background .4s}
+.live-dot.connected{background:var(--green);animation:pulse-dot 2.5s ease-in-out infinite}
+.live-label{font-family:var(--mono);font-size:.6rem;font-weight:600;letter-spacing:.07em;color:var(--text3);text-transform:uppercase}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(13,168,106,.5)}50%{box-shadow:0 0 0 4px rgba(13,168,106,0)}}
+
+/* ── AUTH MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);width:100%;max-width:380px;box-shadow:var(--shadow-lg);transform:translateY(12px);transition:transform .2s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{padding:20px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-weight:700;font-size:1rem}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;font-size:.9rem;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.modal-body{padding:20px}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:.72rem;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.mfield input{width:100%;border:1px solid var(--border);border-radius:var(--rsm);padding:9px 12px;font-family:var(--sans);font-size:.85rem;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+.mfield input:focus{border-color:var(--cyan);background:var(--surface)}
+.mbtn{width:100%;padding:10px;border-radius:var(--rsm);background:var(--cyan);color:#fff;border:none;font-family:var(--sans);font-weight:600;font-size:.85rem;cursor:pointer;transition:opacity .15s;margin-top:4px}
+.mbtn:hover{opacity:.88}
+.mbtn.secondary{background:var(--surface);color:var(--text2);border:1px solid var(--border);margin-top:8px}
+.merr{font-size:.75rem;color:var(--red);margin-top:6px;min-height:1em}
+.msucc{font-size:.75rem;color:var(--green);margin-top:6px}
+.mtabs{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--border);border-radius:var(--rsm);overflow:hidden}
+.mtab{flex:1;padding:7px;border:none;background:none;font-family:var(--sans);font-size:.78rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s}
+.mtab.active{background:var(--cyan);color:#fff}
+
+/* ── USER BADGE ── */
+.user-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--rpill);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:.74rem;font-weight:500;color:var(--text2);transition:all .15s}
+.user-badge:hover{border-color:var(--cyan);color:var(--cyan)}
+.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--cyan);color:#fff;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* ── WATCHLIST PANEL ── */
+.wl-panel{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.wl-title{font-weight:700;font-size:.9rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.wl-row{margin-bottom:12px}
+.wl-row label{display:block;font-size:.7rem;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.wl-row input{width:100%;border:1px solid var(--border);border-radius:var(--rsm);padding:7px 11px;font-family:var(--sans);font-size:.8rem;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+.wl-row input:focus{border-color:var(--cyan)}
+.wl-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.wl-tag{display:inline-flex;align-items:center;gap:4px;background:var(--cyan-bg);color:var(--cyan);border:1px solid rgba(0,180,216,.2);border-radius:var(--rpill);padding:3px 9px;font-size:.7rem;font-weight:500}
+.wl-tag button{background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--cyan);padding:0;line-height:1;opacity:.7}
+.wl-tag button:hover{opacity:1}
+.wl-save{background:var(--cyan);color:#fff;border:none;border-radius:var(--rsm);padding:8px 16px;font-family:var(--sans);font-weight:600;font-size:.78rem;cursor:pointer;transition:opacity .15s}
+.wl-save:hover{opacity:.88}
+
+/* ── RETRO SCORING TAB ── */
+.retro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.retro-stat{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:14px;box-shadow:var(--shadow);text-align:center}
+.retro-stat .rs-val{font-family:var(--mono);font-size:1.6rem;font-weight:700;line-height:1;margin-bottom:4px}
+.retro-stat .rs-lbl{font-size:.62rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+.retro-outcome-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);border-left:4px solid var(--border);padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
+.retro-outcome-card.validated{border-left-color:var(--green)}
+.retro-outcome-card.invalidated{border-left-color:var(--red)}
+.retro-outcome-card.partial{border-left-color:var(--gold)}
+.retro-outcome-card.pending{border-left-color:var(--border2);opacity:.7}
+.roc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.roc-title{font-size:.82rem;font-weight:600;color:var(--text)}
+.roc-outcome{font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:var(--rpill)}
+.roc-outcome.validated{background:var(--green-bg);color:var(--green)}
+.roc-outcome.invalidated{background:var(--red-bg);color:var(--red)}
+.roc-outcome.partial{background:var(--gold-bg);color:var(--gold)}
+.roc-outcome.pending{background:var(--surface2);color:var(--text3)}
+.roc-notes{font-size:.75rem;color:var(--text3);margin-top:4px}
+.tier-table{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
+.tier-table-row{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.78rem}
+.tier-table-row:last-child{border-bottom:none}
+.tier-table-head{background:var(--surface2);font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+
+/* ── AGENT TRACE PANEL ── */
+.trace-panel{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
+.trace-header{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between}
+.trace-agent-name{font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px}
+.trace-meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+.trace-meta-cell{background:var(--surface);padding:11px 14px;text-align:center}
+.tmc-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text)}
+.tmc-lbl{font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-top:2px}
+.trace-runs{padding:14px 16px}
+.trace-run-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:.75rem}
+.trace-run-row:last-child{border-bottom:none}
+.run-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.run-status.success{background:var(--green)}
+.run-status.error{background:var(--red)}
+.run-found{font-family:var(--mono);color:var(--text3)}
+.run-time{margin-left:auto;color:var(--text4);font-family:var(--mono);font-size:.68rem}
+.trace-domain{font-size:.74rem;color:var(--text2);padding:0 16px 14px;line-height:1.55}
+.agent-sel{background:var(--bg);border:1px solid var(--border);border-radius:var(--rsm);padding:7px 10px;font-family:var(--sans);font-size:.8rem;color:var(--text);outline:none;cursor:pointer;width:100%;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-wrap">
+    <div class="logo-icon">🔭</div>
+    <div style="display:flex;align-items:baseline;gap:3px">
+      <span class="logo-alpha">Alpha</span>
+      <span class="logo-ops">Ops</span>
+    </div>
+  </div>
+  <div class="hsearch">
+    <span class="si">🔍</span>
+    <input type="text" placeholder="Search signals…" id="searchInput" oninput="onSearch(this.value)"/>
+  </div>
+  <div class="hactions">
+    <div style="display:flex;align-items:center;gap:5px;padding:0 6px">
+      <div class="live-dot" id="liveDot"></div>
+      <span class="live-label" id="liveLabel">offline</span>
+    </div>
+    <div class="ibtn" onclick="refreshAll()">↺</div>
+    <div id="authBtnWrap">
+      <div class="ibtn" onclick="openAuthModal()" title="Sign in">👤</div>
+    </div>
+    <div class="ibtn" id="themeBtn" onclick="toggleTheme()">🌙</div>
+  </div>
+</header>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" onclick="closeAuthModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="authModalTitle">Sign In</span>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mtabs">
+        <button class="mtab active" id="loginTab" onclick="switchAuthTab('login')">Login</button>
+        <button class="mtab" id="registerTab" onclick="switchAuthTab('register')">Register</button>
+      </div>
+      <div class="mfield"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.com"/></div>
+      <div class="mfield"><label>Password</label><input type="password" id="authPass" placeholder="••••••••"/></div>
+      <div class="merr" id="authErr"></div>
+      <button class="mbtn" onclick="submitAuth()">Sign In</button>
+      <button class="mbtn secondary" onclick="closeAuthModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SYSTEM OVERVIEW STRIP -->
+<div class="sysbar">
+  <div class="sysbar-item">
+    <span class="sys-val" id="sv-signals" style="color:var(--cyan)">—</span>
+    <span class="sys-lbl">Signals</span>
+  </div>
+  <div class="sysbar-item">
+    <span class="sys-val" id="sv-clusters" style="color:var(--purple)">—</span>
+    <span class="sys-lbl">Clusters</span>
+  </div>
+  <div class="sysbar-item">
+    <span class="sys-val" id="sv-zones" style="color:var(--red)">—</span>
+    <span class="sys-lbl">Pressure Zones</span>
+  </div>
+  <div class="sysbar-item">
+    <span class="sys-val" id="sv-nexus" style="color:var(--gold)">—</span>
+    <span class="sys-lbl">NEXUS Briefs</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" data-tab="wire" onclick="switchTab('wire',this)">📡 The Wire <span class="tbadge" id="b-wire">0</span></button>
+  <button class="tab" data-tab="grid" onclick="switchTab('grid',this)">⬡ The Grid <span class="tbadge" id="b-grid">0</span></button>
+  <button class="tab" data-tab="pressure" onclick="switchTab('pressure',this)">🔥 Pressure Map <span class="tbadge" id="b-pressure">0</span></button>
+  <button class="tab" data-tab="nexus" onclick="switchTab('nexus',this)">◆ NEXUS Briefs <span class="tbadge" id="b-nexus">0</span></button>
+  <button class="tab" data-tab="retro" onclick="switchTab('retro',this)">📊 Retro Scoring</button>
+  <button class="tab" data-tab="trace" onclick="switchTab('trace',this)">🔍 Agent Trace</button>
+  <button class="tab" data-tab="watchlist" onclick="switchTab('watchlist',this)">⭐ Watchlist</button>
+</div>
+
+<!-- ANALYST BAR -->
+<div class="abar">
+  <div class="abar-lbl">Analysts</div>
+  <div class="abar-scroll" id="abar"></div>
+</div>
+
+<!-- PANES -->
+<div id="pane-wire"      class="feed"></div>
+<div id="pane-grid"      class="feed" style="display:none"></div>
+<div id="pane-pressure"  class="feed" style="display:none"></div>
+<div id="pane-nexus"     class="feed" style="display:none"></div>
+<div id="pane-retro"     class="feed" style="display:none"></div>
+<div id="pane-trace"     class="feed" style="display:none"></div>
+<div id="pane-watchlist" class="feed" style="display:none"></div>
+
+<script>
+const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://localhost:5000':'';
+const PAGE=30;
+const DEMO=!false; // set false when backend is live
+
+/* ── ANALYST META ── */
+const AM={
+  STONE: {e:'🏦',c:'#00b4d8',b:'rgba(0,180,216,.1)',d:'Markets & Currency'},
+  VOSS:  {e:'🕵️',c:'#e03e3e',b:'rgba(224,62,62,.1)',d:'Insider Flow'},
+  MARA:  {e:'🔬',c:'#0da86a',b:'rgba(13,168,106,.1)',d:'Health & Epidemic'},
+  REED:  {e:'📚',c:'#6b4fbb',b:'rgba(107,79,187,.1)',d:'Research & Tech'},
+  ATLAS: {e:'🌍',c:'#d4870f',b:'rgba(212,135,15,.1)',d:'Geopolitics'},
+  WATT:  {e:'⚡',c:'#d9601a',b:'rgba(217,96,26,.1)',d:'Energy'},
+  TIDE:  {e:'⚓',c:'#0891b2',b:'rgba(8,145,178,.1)',d:'Maritime & Trade'},
+  ECHO:  {e:'📡',c:'#7c3aed',b:'rgba(124,58,237,.1)',d:'Social Sentiment'},
+  LEX:   {e:'⚖️',c:'#b45309',b:'rgba(180,83,9,.1)',d:'Regulatory'},
+  FINN:  {e:'💼',c:'#059669',b:'rgba(5,150,105,.1)',d:'Investment'},
+  CARGO: {e:'📦',c:'#d97706',b:'rgba(217,119,6,.1)',d:'Supply Chain'},
+  TERRA: {e:'🌱',c:'#16a34a',b:'rgba(22,163,74,.1)',d:'Climate'},
+  DELPHI:{e:'🔮',c:'#9333ea',b:'rgba(147,51,234,.1)',d:'Prediction Markets'},
+  GHOST: {e:'👁',c:'#64748b',b:'rgba(100,116,139,.1)',d:'Conflict & Instability'},
+};
+
+/* ── DEMO DATA ── */
+const DEMO_POSTS=[
+  {id:'p1',analyst:'GHOST',type:'alert',confidence:.72,source_count:3,timestamp:new Date(Date.now()-14*60000).toISOString(),tags:['nigeria','conflict','oil-region','militancy'],body:"Armed militant group in the Niger Delta has attacked two Chevron pipeline junctions near Warri, disrupting an estimated 35,000 bpd of crude output. MEND-affiliated accounts on Telegram have claimed responsibility. Nigerian Army confirms deployment of Joint Task Force units to Rivers State. Third pipeline incident in 14 days."},
+  {id:'p2',analyst:'STONE',type:'alert',confidence:.68,source_count:2,timestamp:new Date(Date.now()-22*60000).toISOString(),tags:['nigeria','naira','currency','capital-flight'],body:"NGN/USD spread between official and parallel market rates widened to 18.4% today, up from 11.2% last week. CBN foreign reserves fell $340M in five sessions. Three Nigerian commercial banks reporting elevated FX demand from corporate clients with dollar-denominated debt obligations due Q3. Pattern consistent with pre-devaluation positioning observed in 2023."},
+  {id:'p3',analyst:'CARGO',type:'alert',confidence:.65,source_count:2,timestamp:new Date(Date.now()-31*60000).toISOString(),tags:['nigeria','apapa','port','congestion','supply-chain'],body:"Apapa Port Lagos vessel queue at 47 ships — highest since February 2023. Average dwell time for containerised cargo now 18.3 days vs 9.1-day baseline. Customs document verification backlog traced to new NCS scanning mandate effective June 1. Freight forwarders reporting force majeure notices from three European shipping lines suspending new bookings to Lagos."},
+  {id:'p4',analyst:'ATLAS',type:'alert',confidence:.71,source_count:3,timestamp:new Date(Date.now()-44*60000).toISOString(),tags:['nigeria','election','political-risk','imo-state'],body:"Imo State governorship tribunal ruling expected within 72 hours. Opposition PDP sources claim 4 of 5 judges have received threats. US Embassy Lagos issued internal advisory to American nationals in southeast Nigeria. Three separate protest convoys departed Owerri toward Abuja overnight. Precedent: 2019 Imo ruling triggered 11 days of commercial disruption in Owerri metro."},
+  {id:'p5',analyst:'MARA',type:'signal',confidence:.58,source_count:2,timestamp:new Date(Date.now()-67*60000).toISOString(),tags:['bangladesh','cholera','dhaka','garment','workforce'],body:"WHO Disease Outbreak News confirms cholera cluster in Dhaka's Mirpur district — 214 confirmed cases, 3 fatalities over 96 hours. Mirpur hosts 340,000 garment workers across 180 registered factories. BGMEA has not issued guidance. Water supply contamination traced to Turag River overflow during last week's pre-monsoon flooding. Two H&M and one Primark supplier factories located within 2km of cluster epicentre."},
+  {id:'p6',analyst:'CARGO',type:'signal',confidence:.61,source_count:2,timestamp:new Date(Date.now()-78*60000).toISOString(),tags:['bangladesh','chittagong','port','shipping','delays'],body:"Chittagong port booking lead times extended from 4 to 11 days by Maersk and MSC effective June 10. Port authority cites congestion from pre-monsoon cargo surge. Thirty-two vessels at anchorage vs seasonal average of fourteen. ILO Dhaka field office reported informal labour unrest at four EPZ factories in Gazipur on June 3-4 — unreported in Bangladeshi press."},
+  {id:'p7',analyst:'TERRA',type:'signal',confidence:.55,source_count:1,timestamp:new Date(Date.now()-89*60000).toISOString(),tags:['bangladesh','monsoon','flooding','climate','agriculture'],body:"NOAA seasonal outlook revised June 2: Bay of Bengal SSTs 1.4°C above 1991-2020 baseline, increasing probability of above-normal 2026 monsoon season to 67%. IMD Dhaka forecasts onset 10-14 days earlier than historical median. Bangladesh Agricultural Ministry has not updated flood preparedness guidance since March. Boro rice harvest (national food security staple) at risk if flooding precedes July 15 harvest window."},
+  {id:'p8',analyst:'VOSS',type:'signal',confidence:.63,source_count:2,timestamp:new Date(Date.now()-95*60000).toISOString(),tags:['nigeria','options','institutional','positioning'],body:"Unusual put option activity detected on iShares MSCI Nigeria ETF (NGE): 3,400 contracts at $18 strike expiring August vs 30-day average of 340. Block trade of 180,000 NGE shares crossed at $19.42 — largest since March 2023. Two London-based EM hedge funds filed 13F amendments showing reduced Nigeria exposure. Positioning consistent with institutions hedging ahead of known political catalyst."},
+  {id:'p9',analyst:'WATT',type:'signal',confidence:.52,source_count:1,timestamp:new Date(Date.now()-112*60000).toISOString(),tags:['nigeria','nnpc','gas','flaring','infrastructure'],body:"NNPC Limited operational report (June 4) shows Forcados terminal operating at 61% capacity following valve replacement delays. Trans Niger Pipeline running at 78% following third-party interference repair. Estimated combined output loss: 28,000 bpd. Bonny Light spot differential to Brent widened to -$2.40/bbl from -$1.10/bbl in May — market pricing in continued supply uncertainty."},
+  {id:'p10',analyst:'FINN',type:'opportunity',confidence:.59,source_count:2,timestamp:new Date(Date.now()-134*60000).toISOString(),tags:['nigeria','ifc','private-equity','infrastructure'],body:"IFC confirmed $200M commitment to Africa Finance Corporation's infrastructure fund targeting Nigerian power and logistics assets. Two Abuja-based PE firms filed CAMA incorporation documents for logistics-focused SPVs this week. Pattern: smart money building long-term positions during political uncertainty — consistent with IFC Nigeria Energy Sector move ahead of 2015 elections before 40% subsequent appreciation."},
+  {id:'p11',analyst:'ECHO',type:'signal',confidence:.44,source_count:1,timestamp:new Date(Date.now()-145*60000).toISOString(),tags:['nigeria','social','unrest','sentiment'],body:"Nigerian Twitter/X trending analysis: 'Fuel subsidy', 'NNPC', and 'Warri attack' co-trending for 6th consecutive hour. r/Nigeria on Reddit showing 340% above-baseline post volume since yesterday. Lagos-based civic tech platform Street Report logged 847 incident reports in past 24h vs 120-day average of 203. Collective anxiety index at highest reading since EndSARS protests — social pressure building."},
+  {id:'p12',analyst:'REED',type:'breakthrough',confidence:.57,source_count:2,timestamp:new Date(Date.now()-167*60000).toISOString(),tags:['bangladesh','ai','garment','automation','disruption'],body:"MIT Media Lab published preprint: AI-assisted pattern cutting reduces skilled labour requirement by 34% in pilot with two Bangladeshi factories. Simultaneously, H&M annual report (released June 3) references 'automation roadmap for Tier 1 suppliers by 2028.' If adopted at scale, Bangladesh's 4.2M garment workforce faces structural displacement. This is a 2-3 year horizon signal with near-term political risk implications."},
+  {id:'p13',analyst:'LEX',type:'signal',confidence:.66,source_count:3,timestamp:new Date(Date.now()-178*60000).toISOString(),tags:['nigeria','sanctions','ofac','compliance','risk'],body:"OFAC updated SDN list June 3 added two Nigerian nationals connected to crude oil theft networks operating in Delta State. Simultaneously, UK FCDO issued updated Nigeria travel advisory citing 'increased risk of kidnapping for ransom targeting business travellers' in Rivers, Delta, and Bayelsa States. Three international insurers have quietly raised Nigeria political risk premiums 15-22% in May — not yet widely reported."},
+  {id:'p14',analyst:'DELPHI',type:'signal',confidence:.61,source_count:2,timestamp:new Date(Date.now()-198*60000).toISOString(),tags:['nigeria','polymarket','probability','instability'],body:"Polymarket: 'Nigeria devalues NGN before September 2026' contract trading at 71% (up from 44% two weeks ago). Metaculus community forecast for 'significant political disruption in Nigeria H2 2026' revised from 28% to 41% probability since June 1. Prediction market consensus has historically led Bloomberg EM sentiment indices by 3-6 weeks on Nigeria-specific events."},
+  {id:'p15',analyst:'TIDE',type:'alert',confidence:.69,source_count:2,timestamp:new Date(Date.now()-215*60000).toISOString(),tags:['nigeria','gulf-of-guinea','piracy','shipping','maritime'],body:"IMB Piracy Reporting Centre: two crew-abduction incidents logged in Gulf of Guinea in past 5 days — both within 40nm of Bonny Island export terminal. UKMTO issued advisory to vessels transiting Nigerian EEZ below 4°N latitude. Baltic Exchange Nigeria route premium up 34bps this week. Mærsk and CMA CGM have activated armed escort protocols for all vessels calling Lagos and Warri."},
+];
+
+const DEMO_CLUSTERS=[
+  {id:'c1',entity_type:'countries',entity_value:'nigeria',analysts:['GHOST','STONE','CARGO','ATLAS','VOSS','WATT','LEX','DELPHI','TIDE','ECHO'],analyst_count:10,mention_count:14,corroboration_score:18.4,avg_confidence:.64,max_severity:'HIGH',sample_signals:["Armed militant attack on Chevron pipelines disrupting 35,000 bpd near Warri","NGN/USD parallel market spread widened to 18.4% — pre-devaluation positioning","Apapa Port Lagos vessel queue at 47 ships, highest since February 2023"],timestamp:new Date(Date.now()-8*60000).toISOString()},
+  {id:'c2',entity_type:'event_types',entity_value:'supply chain disruption',analysts:['CARGO','TIDE','GHOST','WATT'],analyst_count:4,mention_count:6,corroboration_score:8.2,avg_confidence:.66,max_severity:'HIGH',sample_signals:["Apapa Port dwell time 18.3 days vs 9.1 baseline — force majeure from 3 EU lines","Gulf of Guinea piracy incidents activating armed escort protocols","Forcados terminal at 61% capacity, Bonny Light differential widening"],timestamp:new Date(Date.now()-10*60000).toISOString()},
+  {id:'c3',entity_type:'countries',entity_value:'bangladesh',analysts:['MARA','CARGO','TERRA','REED'],analyst_count:4,mention_count:5,corroboration_score:7.6,avg_confidence:.58,max_severity:'MEDIUM',sample_signals:["WHO confirms cholera cluster in Mirpur — 214 cases near major garment factories","Chittagong port booking lead times extended to 11 days by Maersk and MSC","NOAA forecasts early, above-normal monsoon onset — 67% probability"],timestamp:new Date(Date.now()-12*60000).toISOString()},
+  {id:'c4',entity_type:'sectors',entity_value:'oil & gas',analysts:['GHOST','WATT','STONE','VOSS'],analyst_count:4,mention_count:6,corroboration_score:9.1,avg_confidence:.66,max_severity:'HIGH',sample_signals:["Pipeline attack near Warri disrupting 35,000 bpd","NNPC Forcados terminal at 61%, Trans Niger at 78% capacity","Bonny Light spot differential to Brent widened to -$2.40/bbl"],timestamp:new Date(Date.now()-9*60000).toISOString()},
+  {id:'c5',entity_type:'commodities',entity_value:'crude oil',analysts:['GHOST','WATT','STONE','TIDE'],analyst_count:4,mention_count:5,corroboration_score:7.8,avg_confidence:.65,max_severity:'HIGH',sample_signals:["35,000 bpd disrupted from Warri pipeline attack","Bonny Light-Brent differential at -$2.40/bbl and widening","Maritime security incidents activating vessel escort protocols"],timestamp:new Date(Date.now()-11*60000).toISOString()},
+  {id:'c6',entity_type:'event_types',entity_value:'currency crisis',analysts:['STONE','VOSS','DELPHI'],analyst_count:3,mention_count:4,corroboration_score:5.4,avg_confidence:.64,max_severity:'MEDIUM',sample_signals:["NGN parallel market spread at 18.4% — highest since 2023 devaluation","Polymarket devaluation contract trading at 71% probability","Institutional put options on NGE ETF at 10x normal volume"],timestamp:new Date(Date.now()-14*60000).toISOString()},
+  {id:'c7',entity_type:'sectors',entity_value:'garment manufacturing',analysts:['MARA','CARGO','TERRA','REED'],analyst_count:4,mention_count:4,corroboration_score:6.2,avg_confidence:.58,max_severity:'MEDIUM',sample_signals:["Cholera cluster in Mirpur within 2km of H&M and Primark supplier factories","Chittagong port congestion extending delivery timelines by 7 days","MIT research signals automation roadmap that could displace 4.2M workers"],timestamp:new Date(Date.now()-15*60000).toISOString()},
+  {id:'c8',entity_type:'asset_classes',entity_value:'frontier equities',analysts:['STONE','VOSS','FINN','DELPHI'],analyst_count:4,mention_count:5,corroboration_score:5.9,avg_confidence:.60,max_severity:'MEDIUM',sample_signals:["NGE ETF put option volume at 10x 30-day average — institutional hedging","IFC $200M Africa Finance Corporation commitment — long-term positioning","Metaculus probability of Nigeria political disruption up 13 points in 5 days"],timestamp:new Date(Date.now()-18*60000).toISOString()},
+];
+
+const DEMO_ZONES=[
+  {id:'z1',geography:'nigeria',pressure_score:14.8,heat_level:'CRITICAL',analyst_count:10,analysts:['GHOST','STONE','CARGO','ATLAS','VOSS','WATT','LEX','DELPHI','TIDE','ECHO'],domain_count:8,domains:['conflict','financial','supply_chain','geopolitical','energy','maritime','regulatory','probabilistic'],domain_diversity:.85,velocity_score:3.2,compound_multiplier:2.1,cluster_count:8,signal_count:14,event_types:['conflict escalation','currency crisis','supply chain disruption','port congestion','political instability'],sectors:['Oil & Gas','Maritime Logistics','Banking & Finance','Retail Trade'],asset_classes:['Frontier Equities','EM Sovereign Bonds','Crude Oil Futures'],max_severity:'HIGH',timestamp:new Date(Date.now()-6*60000).toISOString()},
+  {id:'z2',geography:'bangladesh',pressure_score:5.4,heat_level:'ELEVATED',analyst_count:4,analysts:['MARA','CARGO','TERRA','REED'],domain_count:4,domains:['health','supply_chain','climate','technology'],domain_diversity:.57,velocity_score:1.8,compound_multiplier:1.4,cluster_count:4,signal_count:5,event_types:['disease outbreak','supply chain disruption','climate event'],sectors:['Garment Manufacturing','Agricultural Commodities','Maritime Logistics'],asset_classes:['EM Sovereign Bonds','Cotton Futures'],max_severity:'MEDIUM',timestamp:new Date(Date.now()-10*60000).toISOString()},
+  {id:'z3',geography:'gulf of guinea',pressure_score:6.1,heat_level:'HIGH',analyst_count:3,analysts:['GHOST','TIDE','WATT'],domain_count:3,domains:['conflict','maritime','energy'],domain_diversity:.43,velocity_score:2.4,compound_multiplier:1.6,cluster_count:3,signal_count:4,event_types:['conflict escalation','port congestion','supply chain disruption'],sectors:['Maritime Logistics','Oil & Gas'],asset_classes:['Crude Oil Futures'],max_severity:'HIGH',timestamp:new Date(Date.now()-8*60000).toISOString()},
+];
+
+const DEMO_NEXUS=[
+  {id:'n1',title:'Nigeria Multi-Domain Crisis Cluster — Imminent Market Disruption',synthesis:"THE DESK has synthesised convergence across 10 independent analysts pointing at Nigeria simultaneously. GHOST confirmed militant pipeline attacks disrupting 35,000 bpd in the Niger Delta. STONE flagged NGN/USD parallel market spread at 18.4% — the widest since the June 2023 devaluation. CARGO documented Apapa Port vessel queue at a 16-month high. ATLAS identified a politically sensitive tribunal ruling due within 72 hours. VOSS recorded institutional put option volume on NGE at 10x normal. WATT confirmed Forcados terminal running at 61% capacity. TIDE issued maritime security advisory for Gulf of Guinea. The Grid corroborated eight entity clusters across Nigeria including countries, oil & gas sector, currency crisis, and supply chain disruption. Pressure Map scores Nigeria at 14.8 — CRITICAL heat level with compound multiplier of 2.1x from conflict-supply chain co-occurrence.",so_what:"This is a compound risk event, not a single-factor disruption. The simultaneous convergence of militant activity, currency stress, port congestion, and political uncertainty creates a window of maximum exposure for investors with Nigeria positions. The NGN devaluation probability at 71% on Polymarket combined with CBN reserve drawdown and institutional hedging activity suggests smart money is already exiting. Any fund with unhedged Nigeria equity exposure should reassess within 48 hours.",who_affected:"Primary: Frontier EM fund managers long NGN-denominated assets and Nigerian equities (NGE ETF). Oil traders with Bonny Light long positions. Secondary: Garment and consumer goods importers using Lagos as West Africa hub. Shipping lines operating Gulf of Guinea routes. Tertiary: Pan-African PE funds with Nigerian portfolio companies.",timeline:"48-72 hour decision window before tribunal ruling creates binary political outcome. Currency pressure likely to accelerate over 2-3 weeks if CBN does not defend NGN with rate action. Pipeline disruption impact on Bonny Light supply calculable within 5-7 days based on repair timeline precedent.",historical_precedent:"June 2023 Nigeria convergence pattern: STONE flagged parallel market spread above 15%, GHOST reported Delta violence, CARGO documented port delays — within 18 days CBN devalued NGN 40%. Current signal intensity is higher across more domains than the 2023 precursor.",next_steps:"1. Hedge or reduce NGE ETF exposure before tribunal ruling — VOSS put option positioning suggests institutions already doing this. 2. Contact Apapa freight agents directly for container release timeline — FreightWaves Nigeria desk has real-time data. 3. Model Bonny Light supply disruption scenarios against crude book — 35,000 bpd loss for 2+ weeks historically widens differential 80-120bps.",what_to_watch:"1. CBN official FX rate announcement — any gap reduction to parallel market rate signals imminent managed devaluation (monitor CBN.gov.ng daily). 2. Imo State tribunal ruling — check NAN (News Agency of Nigeria) within 72 hours for outcome and immediate Owerri street reaction. 3. Maersk and MSC Nigeria booking status — suspension of new bookings signals they expect 30+ day disruption (monitor FreightWaves SONAR).",confidence_tier:'CONFIRMED',analysts_involved:['GHOST','STONE','CARGO','ATLAS','VOSS','WATT','TIDE','LEX','DELPHI','ECHO'],confidence:.81,convergence_score:.92,brief_type:'nexus',trigger_type:'pressure_zone',uncertainty_notes:'Tribunal ruling outcome is binary and unpredictable. CBN intervention timing unknown. Militant group escalation trajectory unverified beyond Telegram claims.',timestamp:new Date(Date.now()-5*60000).toISOString()},
+  {id:'n2',title:'Bangladesh Compounding Supply Chain Risk — 14-21 Day Window',synthesis:"THE DESK detected convergence across four analysts independently flagging Bangladesh across health, maritime, climate, and technology domains. MARA confirmed WHO cholera outbreak in Dhaka's Mirpur district — 214 cases within 2km of major H&M and Primark supplier factories. CARGO reported Chittagong port booking lead times extending from 4 to 11 days following Maersk and MSC congestion declarations. TERRA's revised NOAA monsoon forecast raises flood probability for the pre-harvest window. REED's sourcing of MIT preprint and H&M automation roadmap adds a structural medium-term risk layer. The Grid confirmed corroboration clusters across Bangladesh (countries), garment manufacturing (sector), and disease outbreak + supply chain disruption (event type co-occurrence). Compound multiplier of 1.4x from health-supply chain overlap.",so_what:"European fast fashion brands with Bangladesh Tier 1 sourcing above 25% of production face a converging near-term disruption. The cholera cluster is currently unreported in mainstream press and located adjacent to declared supplier factories — if it expands, BGMEA will be forced to issue guidance that could trigger buyer force majeure reviews. Chittagong congestion alone adds 7 days to delivery cycles, impacting Q3 inventory positions for autumn/winter collections.",who_affected:"Primary: H&M, Primark, Zara, Next sourcing directors with Bangladesh Tier 1 factories. Cotton futures traders (Bangladesh consumes 8% of global cotton trade). Secondary: EM bond holders with Bangladesh sovereign exposure. Freight forwarders and 3PLs with Bay of Bengal capacity. Tertiary: Bangladesh garment ETFs and frontier market funds with BGMEA-adjacent equity positions.",timeline:"14-21 day window for supply chain disruption to become commercially material. Cholera cluster trajectory determinable within 7 days. Monsoon onset risk activates August-September if NOAA forecast holds. Automation displacement is a 24-36 month structural horizon — monitor separately.",historical_precedent:"2022 Sri Lanka crisis: MARA flagged healthcare system collapse, CARGO documented Colombo port delays, TERRA reported drought conditions — convergence preceded 60% reduction in Sri Lankan garment exports within 6 weeks. Bangladesh signal intensity is lower but multi-domain pattern is structurally identical.",next_steps:"1. Request factory-level business continuity confirmation from Bangladesh Tier 1 suppliers — specifically Mirpur and Gazipur districts. 2. Pre-position alternative sourcing options in Vietnam or India for autumn/winter programmes — 3-4 week lead time to activate. 3. Monitor Chittagong port booking availability weekly via FreightWaves SONAR Bay of Bengal capacity tracker.",what_to_watch:"1. BGMEA official guidance on Mirpur cholera cluster — absence of guidance itself is a signal (monitor bgmea.com.bd daily). 2. Chittagong port booking lead times via Maersk.com — extension beyond 14 days triggers critical threshold. 3. IMD Dhaka monsoon onset date — early onset before June 25 compresses harvest window below viable threshold.",confidence_tier:'DEVELOPING',analysts_involved:['MARA','CARGO','TERRA','REED'],confidence:.61,convergence_score:.74,brief_type:'nexus',trigger_type:'grid_cluster',uncertainty_notes:"Cholera case count unverified beyond WHO DON preliminary report. Factory proximity to cluster based on BGMEA public registry — actual worker flow patterns unconfirmed. Automation timeline dependent on buyer adoption decisions not yet announced.",timestamp:new Date(Date.now()-28*60000).toISOString()},
+];
+
+/* ── STATE ── */
+let posts=DEMO_POSTS, clusters=DEMO_CLUSTERS, zones=DEMO_ZONES, briefs=DEMO_NEXUS;
+let activity={GHOST:3,STONE:3,CARGO:2,ATLAS:1,VOSS:2,WATT:2,MARA:1,REED:1,ECHO:1,LEX:1,FINN:1,DELPHI:1,TERRA:1,TIDE:1};
+let activeAna='ALL', searchQ='', darkMode=false;
+
+/* ── HELPERS ── */
+function ago(ts){if(!ts)return'—';const s=(Date.now()-new Date(ts))/1000;if(s<60)return`${~~s}s ago`;if(s<3600)return`${~~(s/60)}m ago`;if(s<86400)return`${~~(s/3600)}h ago`;return`${~~(s/86400)}d ago`}
+function cc(c){if(c>=.65)return'var(--green)';if(c>=.4)return'var(--gold)';return'var(--red)'}
+function san(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function da(v){if(Array.isArray(v))return v;if(typeof v==='string'&&v){try{const r=JSON.parse(v);return Array.isArray(r)?r:[]}catch(e){return[]}}return[]}
+function tc(t){if(!t)return'tier-early';const l=t.toLowerCase();if(l.includes('high'))return'tier-high';if(l.includes('confirm'))return'tier-confirmed';if(l.includes('develop'))return'tier-developing';return'tier-early'}
+
+/* ── SYSBAR ── */
+function updateSysbar(){
+  document.getElementById('sv-signals').textContent=posts.length;
+  document.getElementById('sv-clusters').textContent=clusters.length;
+  document.getElementById('sv-zones').textContent=zones.length;
+  document.getElementById('sv-nexus').textContent=briefs.length;
+  document.getElementById('b-wire').textContent=posts.length;
+  document.getElementById('b-grid').textContent=clusters.length;
+  document.getElementById('b-pressure').textContent=zones.length;
+  document.getElementById('b-nexus').textContent=briefs.length;
+}
+
+/* ── ANALYST BAR ── */
+function buildAbar(){
+  const c=document.getElementById('abar');
+  const names=['ALL',...Object.keys(AM)];
+  c.innerHTML=names.map(n=>{
+    const a=AM[n];
+    const cnt=n==='ALL'?posts.length:(activity[n]||0);
+    const ia=n===activeAna;
+    const col=a?a.c:'#8a96a3';
+    return`<div class="av-wrap" onclick="filterBy('${n}')">
+      <div class="av${ia?' active':''}" style="${ia?`border-color:${col};box-shadow:0 0 0 3px ${col}22`:''}">${a?a.e:'🌐'}</div>
+      <span class="av-name" style="${ia?`color:${col}`:'font-size:.58rem'}">${n==='ALL'?'All':n}</span>
+      <span class="av-cnt">${cnt||'—'}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── SIGNAL CARD ── */
+function renderCard(p){
+  const n=p.analyst||'UNKNOWN';
+  const m=AM[n]||{e:'◯',c:'#8a96a3',b:'rgba(138,150,163,.1)',d:'Intelligence'};
+  const type=(p.type||'signal').toLowerCase();
+  const conf=parseFloat(p.confidence||0);
+  const tags=da(p.tags).slice(0,5);
+  const srcs=parseInt(p.source_count||1);
+  return`<div class="card" style="border-left-color:${m.c}">
+    <div class="ctop">
+      <div class="cav" style="border-color:${m.c};background:${m.b}">${m.e}</div>
+      <div class="cmeta">
+        <div class="cmeta-top">
+          <span class="cname" style="color:${m.c}">${san(n)}</span>
+          <span class="cpill pill-${type}">${type.charAt(0).toUpperCase()+type.slice(1)}</span>
+          <span class="ctime">${ago(p.timestamp)}</span>
+        </div>
+        <div class="cdomain">${san(m.d)}</div>
+      </div>
+    </div>
+    <div class="cbody">${san(p.body||'')}</div>
+    <div class="cfoot">
+      <div class="cbar-wrap"><div class="cbar"><div class="cfill" style="width:${Math.round(conf*100)}%;background:${cc(conf)}"></div></div><span class="cpct" style="color:${cc(conf)}">${Math.round(conf*100)}%</span></div>
+      <span class="csrc">· ${srcs} src${srcs!==1?'s':''}</span>
+      <div class="ctags">${tags.map(t=>`<span class="tag">${san(t)}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+/* ── GRID CARD ── */
+function renderCluster(c){
+  const analysts=da(c.analysts);
+  const samples=da(c.sample_signals);
+  const etype=c.entity_type||'';
+  const sev=c.max_severity||'LOW';
+  const chips=analysts.map(a=>{const m=AM[a];const col=m?m.c:'#8a96a3';return`<span class="gchip" style="color:${col};border-color:${col};background:${col}18">${san(a)}</span>`}).join('');
+  return`<div class="gcard">
+    <div class="gcard-top">
+      <div class="gcard-entity">
+        <span class="gcard-type etype-${etype}">${san(etype.replace(/_/g,' '))}</span>
+        <span class="gcard-val">${san(c.entity_value||'')}</span>
+      </div>
+      <span class="gcard-score">↑ ${(c.corroboration_score||0).toFixed(1)}</span>
+    </div>
+    <div class="gcard-analysts">${chips}</div>
+    <div class="gcard-signals">${samples.slice(0,2).map(s=>`<div class="gsig">${san(s)}</div>`).join('')}</div>
+    <div class="gcard-meta">
+      <span class="gcard-stat">${c.analyst_count} analysts · ${c.mention_count} signals</span>
+      <span class="sev-pill sev-${sev}">${san(sev)}</span>
+      <span class="gcard-stat">${ago(c.timestamp)}</span>
+    </div>
+  </div>`;
+}
+
+/* ── PRESSURE CARD ── */
+function renderZone(z){
+  const heat=z.heat_level||'MONITORING';
+  const domains=da(z.domains);
+  const events=da(z.event_types);
+  const sectors=da(z.sectors);
+  return`<div class="pzone">
+    <div class="pzone-bar heat-${heat}"></div>
+    <div class="pzone-body">
+      <div class="pzone-top">
+        <div>
+          <div class="pzone-geo">${san(z.geography)}</div>
+          ${sectors.length?`<div class="pzone-sub">${sectors.slice(0,3).map(s=>san(s)).join(' · ')}</div>`:''}
+        </div>
+        <span class="heat-pill hp-${heat}">${san(heat)}</span>
+      </div>
+      <div class="pzone-metrics">
+        <div class="pm"><span class="pm-val">${(z.pressure_score||0).toFixed(1)}</span><span class="pm-lbl">Pressure</span></div>
+        <div class="pm"><span class="pm-val">${(z.velocity_score||0).toFixed(1)}x</span><span class="pm-lbl">Velocity</span></div>
+        <div class="pm"><span class="pm-val">${Math.round((z.domain_diversity||0)*100)}%</span><span class="pm-lbl">Domain Div.</span></div>
+      </div>
+      ${domains.length?`<div class="pzone-chips">${domains.map(d=>`<span class="domain-chip">${san(d)}</span>`).join('')}</div>`:''}
+      ${events.length?`<div class="pzone-chips">${events.slice(0,5).map(e=>`<span class="event-chip">${san(e)}</span>`).join('')}</div>`:''}
+    </div>
+  </div>`;
+}
+
+/* ── NEXUS BRIEF ── */
+function renderNexus(b){
+  const analysts=da(b.analysts_involved);
+  const conf=parseFloat(b.confidence||0.5);
+  const conv=parseFloat(b.convergence_score||0.5);
+  const tier=b.confidence_tier||'EARLY WARNING';
+  const chips=analysts.map(a=>{const m=AM[a];const c=m?m.c:'#8a96a3';return`<span class="nchip" style="color:${c};border-color:${c};background:${c}15">${san(a)}</span>`}).join('');
+  const fields=[
+    b.so_what?`<div class="nfield so-what"><div class="nf-lbl">▸ So What</div><div class="nf-body">${san(b.so_what)}</div></div>`:'',
+    b.who_affected?`<div class="nfield who"><div class="nf-lbl">▸ Who's Affected</div><div class="nf-body">${san(b.who_affected)}</div></div>`:'',
+    b.timeline?`<div class="nfield timeline"><div class="nf-lbl">▸ Timeline</div><div class="nf-body">${san(b.timeline)}</div></div>`:'',
+    b.historical_precedent?`<div class="nfield precedent"><div class="nf-lbl">▸ Historical Precedent</div><div class="nf-body">${san(b.historical_precedent)}</div></div>`:'',
+    b.next_steps?`<div class="nfield next-steps"><div class="nf-lbl">▸ Next Steps</div><div class="nf-body">${san(b.next_steps)}</div></div>`:'',
+    b.what_to_watch?`<div class="nfield watch"><div class="nf-lbl">▸ What to Watch</div><div class="nf-body">${san(b.what_to_watch)}</div></div>`:'',
+  ].filter(Boolean).join('');
+  return`<div class="nexus">
+    <div class="nexus-topbar"></div>
+    <div class="nexus-inner">
+      <div class="nexus-eyebrow">
+        <span class="nexus-label">◆ NEXUS Brief · The Desk</span>
+        <span class="nexus-time">${ago(b.timestamp)}</span>
+      </div>
+      <div class="nexus-title">${san(b.title||'Intelligence Brief')}</div>
+      <div class="nexus-synthesis">${san(b.synthesis||b.body||'')}</div>
+      <div class="nexus-chips">${chips}<span class="tier-pill ${tc(tier)}">${san(tier)}</span></div>
+      ${fields?`<div class="nexus-fields">${fields}</div>`:''}
+      <div class="nexus-footer">
+        <div class="nfm"><span class="nfm-lbl">Conv.</span><span class="nfm-val" style="color:var(--purple)">${Math.round(conv*100)}%</span></div>
+        <div class="nfm"><span class="nfm-lbl">Confidence</span><span class="nfm-val" style="color:${cc(conf)}">${Math.round(conf*100)}%</span></div>
+        ${b.uncertainty_notes?`<span class="nuncert">⚠ ${san(b.uncertainty_notes)}</span>`:''}
+        <span class="trigger-tag">${san((b.trigger_type||'convergence').replace(/_/g,' '))}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── RENDER PANES ── */
+function renderWire(){
+  const fp=activeAna==='ALL'?posts:posts.filter(p=>p.analyst===activeAna);
+  const fq=searchQ?fp.filter(p=>(p.body||'').toLowerCase().includes(searchQ)||(da(p.tags)).some(t=>t.toLowerCase().includes(searchQ))):fp;
+  const el=document.getElementById('pane-wire');
+  if(!fq.length){el.innerHTML=`<div class="empty-s"><div class="ei">📡</div><div class="et">No signals match this filter</div></div>`;return}
+  el.innerHTML=fq.slice(0,PAGE).map(renderCard).join('')+(fq.length>PAGE?`<button class="load-more" onclick="loadMoreWire()">Load more signals</button>`:'');
+}
+
+function renderGrid(){
+  const el=document.getElementById('pane-grid');
+  el.innerHTML=`<div class="intro-banner" style="background:var(--purple-bg);border-color:rgba(107,79,187,.15)"><div class="ib-title" style="color:var(--purple)">Entity Corroboration Layer</div><div class="ib-body" style="color:var(--text2)">Every signal is parsed for structured entities — countries, sectors, commodities, event types. When 2+ independent analysts flag the same entity, a corroboration cluster forms. Score reflects analyst count, entity weight, and severity.</div></div>`+clusters.map(renderCluster).join('');
+}
+
+function renderPressure(){
+  const el=document.getElementById('pane-pressure');
+  el.innerHTML=`<div class="intro-banner" style="background:var(--red-bg);border-color:rgba(224,62,62,.15)"><div class="ib-title" style="color:var(--red)">Regional Pressure Zones</div><div class="ib-body" style="color:var(--text2)">Geographies scored by signal velocity, domain diversity, severity and compound risk co-occurrence. CRITICAL = 4+ domains converging with compound risk multiplier above 1.8x. The Desk monitors these to trigger NEXUS Briefs.</div></div>`+zones.map(renderZone).join('');
+}
+
+function renderNexusPane(){
+  const el=document.getElementById('pane-nexus');
+  el.innerHTML=`<div class="intro-banner" style="background:var(--purple-bg);border-color:rgba(107,79,187,.15)"><div class="ib-title" style="color:var(--purple)">NEXUS Briefs</div><div class="ib-body" style="color:var(--text2)">Finished intelligence product. Written by THE DESK using all four pipeline layers. Each brief carries synthesis, investment implications, affected parties, timeline, historical precedent, next steps, and watchlist indicators.</div></div>`+briefs.map(renderNexus).join('');
+}
+
+/* ── TABS ── */
+function switchTab(name,btn){
+  ['wire','grid','pressure','nexus'].forEach(t=>{document.getElementById(`pane-${t}`).style.display=t===name?'block':'none'});
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset&&b.dataset.tab===name));
+  if(name==='wire')renderWire();
+  if(name==='grid')renderGrid();
+  if(name==='pressure')renderPressure();
+  if(name==='nexus')renderNexusPane();
+}
+
+function filterBy(n){activeAna=n;buildAbar();renderWire();['grid','pressure','nexus'].forEach(t=>{document.getElementById(`pane-${t}`).style.display='none'});document.querySelectorAll('.tab').forEach(b=>{if(b.dataset&&b.dataset.tab)b.classList.toggle('active',b.dataset.tab==='wire')});renderWire()}
+function onSearch(v){searchQ=v.trim().toLowerCase();renderWire()}
+function loadMoreWire(){const fp=activeAna==='ALL'?posts:posts.filter(p=>p.analyst===activeAna);const el=document.getElementById('pane-wire');const ex=el.querySelectorAll('.card').length;const next=fp.slice(ex,ex+PAGE).map(renderCard).join('');const btn=el.querySelector('.load-more');if(btn)btn.insertAdjacentHTML('beforebegin',next);if(ex+PAGE>=fp.length&&btn)btn.remove()}
+
+/* ── THEME ── */
+function toggleTheme(){darkMode=!darkMode;document.body.classList.toggle('dark',darkMode);document.getElementById('themeBtn').textContent=darkMode?'☀':'🌙'}
+
+/* ── LIVE DATA (when backend available) ── */
+async function fetchLive(){
+  if(DEMO)return;
+  try{
+    const [pr,gr,pz,br]=await Promise.all([
+      fetch(`${API}/api/posts?limit=120`).then(r=>r.json()),
+      fetch(`${API}/api/grid`).then(r=>r.json()),
+      fetch(`${API}/api/pressure`).then(r=>r.json()),
+      fetch(`${API}/api/briefs?limit=20`).then(r=>r.json()),
+    ]);
+    posts=(pr.posts||[]).map(p=>{['tags','source_urls','facts'].forEach(f=>{if(typeof p[f]==='string'){try{p[f]=JSON.parse(p[f])}catch(e){p[f]=[]}}});return p});
+    clusters=gr.clusters||[];
+    zones=pz.zones||[];
+    briefs=(br.briefs||[]).map(b=>{['analysts_involved'].forEach(f=>{if(typeof b[f]==='string'){try{b[f]=JSON.parse(b[f])}catch(e){b[f]=[]}}});return b});
+    const sr=await fetch(`${API}/api/stats`).then(r=>r.json());
+    activity=sr.analyst_activity||{};
+    updateSysbar();buildAbar();
+    const ct=document.querySelector('.tab.active');
+    if(ct&&ct.dataset)switchTab(ct.dataset.tab,ct);
+  }catch(e){console.log('Backend not available — using demo data')}
+}
+
+function refreshAll(){fetchLive();if(currentTab==='retro')fetchRetro();if(currentTab==='trace'&&traceAgent)fetchTrace(traceAgent);}
+
+/* ── EXTENDED switchTab (retro/trace/watchlist) ── */
+let currentTab='wire';
+const _origSwitchTab=switchTab;
+switchTab=function(name,btn){
+  currentTab=name;
+  const allPanes=['wire','grid','pressure','nexus','retro','trace','watchlist'];
+  allPanes.forEach(t=>{const el=document.getElementById(`pane-${t}`);if(el)el.style.display=t===name?'block':'none';});
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset&&b.dataset.tab===name));
+  if(name==='wire')renderWire();
+  if(name==='grid')renderGrid();
+  if(name==='pressure')renderPressure();
+  if(name==='nexus')renderNexusPane();
+  if(name==='retro')fetchRetro();
+  if(name==='trace')renderTracePane();
+  if(name==='watchlist')renderWatchlistPane();
+};
+
+/* ══════════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════════ */
+let authToken=localStorage.getItem('ao_token')||null;
+let authUser=JSON.parse(localStorage.getItem('ao_user')||'null');
+let authMode='login';
+
+function openAuthModal(){if(authUser){renderUserMenu();return;}document.getElementById('authModal').classList.add('open');}
+function closeAuthModal(e){if(e&&e.target!==document.getElementById('authModal'))return;document.getElementById('authModal').classList.remove('open');}
+function switchAuthTab(mode){
+  authMode=mode;
+  document.getElementById('loginTab').classList.toggle('active',mode==='login');
+  document.getElementById('registerTab').classList.toggle('active',mode==='register');
+  document.getElementById('authModalTitle').textContent=mode==='login'?'Sign In':'Create Account';
+  document.querySelector('#authModal .mbtn:not(.secondary)').textContent=mode==='login'?'Sign In':'Create Account';
+  document.getElementById('authErr').textContent='';
+}
+async function submitAuth(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pass=document.getElementById('authPass').value;
+  const errEl=document.getElementById('authErr');
+  errEl.textContent='';
+  if(!email||!pass){errEl.textContent='Email and password required.';return;}
+  if(authMode==='register'&&pass.length<8){errEl.textContent='Password must be 8+ characters.';return;}
+  try{
+    const endpoint=authMode==='login'?'/api/auth/login':'/api/auth/register';
+    const res=await fetch(`${API}${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const data=await res.json();
+    if(!res.ok){errEl.textContent=data.error||'Authentication failed.';return;}
+    authToken=data.token;authUser=data.user;
+    localStorage.setItem('ao_token',authToken);localStorage.setItem('ao_user',JSON.stringify(authUser));
+    document.getElementById('authModal').classList.remove('open');
+    updateAuthUI();
+    fetchLive();
+  }catch(e){errEl.textContent='Network error — is the backend running?';}
+}
+function logOut(){
+  authToken=null;authUser=null;
+  localStorage.removeItem('ao_token');localStorage.removeItem('ao_user');
+  updateAuthUI();
+}
+function updateAuthUI(){
+  const wrap=document.getElementById('authBtnWrap');
+  if(authUser){
+    const initials=(authUser.email||'?').substring(0,1).toUpperCase();
+    wrap.innerHTML=`<div class="user-badge" onclick="logOut()" title="Click to log out"><div class="user-avatar">${initials}</div><span>${san(authUser.email.split('@')[0])}</span></div>`;
+  }else{
+    wrap.innerHTML=`<div class="ibtn" onclick="openAuthModal()" title="Sign in">👤</div>`;
+  }
+}
+function authedHeaders(){return authToken?{'Authorization':`Bearer ${authToken}`,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
+
+/* ══════════════════════════════════════════════════════
+   WATCHLIST PANE
+══════════════════════════════════════════════════════ */
+let watchlist={countries:[],sectors:[],analysts:[]};
+let watchlistFeed=[];
+
+async function loadWatchlist(){
+  if(!authToken)return;
+  try{
+    const r=await fetch(`${API}/api/watchlist`,{headers:authedHeaders()});
+    if(r.ok){watchlist=await r.json();}
+  }catch(e){}
+}
+async function saveWatchlist(){
+  if(!authToken){document.getElementById('wlStatus').textContent='Sign in to save watchlists.';return;}
+  try{
+    const r=await fetch(`${API}/api/watchlist`,{method:'PUT',headers:authedHeaders(),body:JSON.stringify(watchlist)});
+    if(r.ok){document.getElementById('wlStatus').textContent='Saved ✓';setTimeout(()=>{const el=document.getElementById('wlStatus');if(el)el.textContent='';},2500);}
+  }catch(e){}
+}
+async function fetchWatchlistFeed(){
+  if(!authToken)return;
+  try{
+    const r=await fetch(`${API}/api/watchlist/feed`,{headers:authedHeaders()});
+    if(r.ok){const d=await r.json();watchlistFeed=d.posts||[];}
+  }catch(e){}
+}
+
+function addWlTag(field,val){
+  val=val.trim();
+  if(!val)return;
+  if(!watchlist[field].includes(val))watchlist[field]=[...watchlist[field],val];
+  renderWatchlistPane();
+}
+function removeWlTag(field,val){watchlist[field]=watchlist[field].filter(v=>v!==val);renderWatchlistPane();}
+
+function renderWatchlistPane(){
+  const el=document.getElementById('pane-watchlist');
+  if(!authUser){
+    el.innerHTML=`<div class="wl-panel"><div class="wl-title">⭐ Personalised Watchlist</div><p style="font-size:.8rem;color:var(--text3);margin-bottom:12px">Sign in to create a personalised intelligence feed filtered to your countries, sectors, and analysts.</p><button class="mbtn" style="max-width:200px" onclick="openAuthModal()">Sign In</button></div>`;
+    return;
+  }
+  const mkTags=(field,label)=>{
+    const tags=watchlist[field]||[];
+    return`<div class="wl-row">
+      <label>${label}</label>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="wl-input-${field}" placeholder="Add ${label.toLowerCase()}…" onkeydown="if(event.key==='Enter'){addWlTag('${field}',this.value);this.value=''}"/>
+        <button class="wl-save" style="padding:6px 12px;flex-shrink:0" onclick="addWlTag('${field}',document.getElementById('wl-input-${field}').value);document.getElementById('wl-input-${field}').value=''">+</button>
+      </div>
+      <div class="wl-tags">${tags.map(t=>`<span class="wl-tag">${san(t)}<button onclick="removeWlTag('${field}','${t}')">✕</button></span>`).join('')}</div>
+    </div>`;
+  };
+
+  const feedHtml=watchlistFeed.length?watchlistFeed.slice(0,30).map(renderCard).join(''):
+    `<div class="empty-s"><div class="ei">⭐</div><div class="et">No matching signals yet. Add countries or sectors above.</div></div>`;
+
+  el.innerHTML=`
+    <div class="wl-panel">
+      <div class="wl-title">⭐ My Intelligence Feed</div>
+      ${mkTags('countries','Countries')}
+      ${mkTags('sectors','Sectors')}
+      ${mkTags('analysts','Analysts')}
+      <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+        <button class="wl-save" onclick="saveWatchlist();fetchWatchlistFeed().then(renderWatchlistPane)">Save & Refresh Feed</button>
+        <span id="wlStatus" style="font-size:.75rem;color:var(--green)"></span>
+      </div>
+    </div>
+    <div style="margin-bottom:8px;font-family:var(--mono);font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">Filtered Feed (${watchlistFeed.length} signals)</div>
+    ${feedHtml}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   RETROSPECTIVE SCORING PANE
+══════════════════════════════════════════════════════ */
+let retroData={overall:{hit_rate:null,total_resolved:0,total_pending:0},by_confidence_tier:{},recent_outcomes:[]};
+
+async function fetchRetro(){
+  if(DEMO){renderRetroPane();return;}
+  try{
+    const r=await fetch(`${API}/api/retro/summary`);
+    if(r.ok)retroData=await r.json();
+  }catch(e){}
+  renderRetroPane();
+}
+
+function renderRetroPane(){
+  const el=document.getElementById('pane-retro');
+  const o=retroData.overall||{};
+  const tiers=retroData.by_confidence_tier||{};
+  const recent=retroData.recent_outcomes||[];
+
+  const hitPct=o.hit_rate!=null?`${Math.round(o.hit_rate*100)}%`:'—';
+  const hitColor=o.hit_rate==null?'var(--text3)':o.hit_rate>=0.7?'var(--green)':o.hit_rate>=0.45?'var(--gold)':'var(--red)';
+
+  // Tier table rows
+  const TIER_ORDER=['CONFIRMED','HIGH CONFIDENCE','DEVELOPING','EARLY WARNING'];
+  const tierRows=TIER_ORDER.map(tier=>{
+    const d=tiers[tier];
+    if(!d)return'';
+    const pct=d.hit_rate!=null?`${Math.round(d.hit_rate*100)}%`:'—';
+    const col=d.hit_rate==null?'var(--text3)':d.hit_rate>=0.7?'var(--green)':d.hit_rate>=0.45?'var(--gold)':'var(--red)';
+    return`<div class="tier-table-row">
+      <span>${san(tier)}</span>
+      <span style="font-family:var(--mono);font-weight:700;color:${col}">${pct}</span>
+      <span style="font-family:var(--mono);color:var(--green)">${d.validated||0}✓</span>
+      <span style="font-family:var(--mono);color:var(--text3)">${d.total_resolved||0} resolved</span>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  // Recent outcomes
+  const outcomeCards=recent.length?recent.slice(0,8).map(r=>{
+    const outcome=r.outcome||'pending';
+    return`<div class="retro-outcome-card ${outcome}">
+      <div class="roc-top">
+        <span class="roc-title">${san(r.brief_id?.substring(0,12)||'Brief')}…</span>
+        <span class="roc-outcome ${outcome}">${outcome.toUpperCase()}</span>
+      </div>
+      ${r.notes?`<div class="roc-notes">${san(r.notes)}</div>`:''}
+      ${r.confidence_tier?`<div style="margin-top:4px;font-size:.68rem;color:var(--text3)">${san(r.confidence_tier)}</div>`:''}
+    </div>`;
+  }).join(''):
+  `<div class="empty-s"><div class="ei">📊</div><div class="et">No outcomes recorded yet. Validate SITREPs via the admin API: POST /api/retro/outcomes</div></div>`;
+
+  el.innerHTML=`
+    <div class="intro-banner" style="background:var(--green-bg);border-color:rgba(13,168,106,.15)">
+      <div class="ib-title" style="color:var(--green)">Retrospective Accuracy Engine</div>
+      <div class="ib-body" style="color:var(--text2)">Every NEXUS Brief outcome is logged — validated when the predicted event occurs, invalidated when it doesn't. This closes the feedback loop and proves the system's predictive validity. hit_rate = (validated + partial×0.5) / all resolved.</div>
+    </div>
+
+    <div class="retro-grid">
+      <div class="retro-stat"><div class="rs-val" style="color:${hitColor}">${hitPct}</div><div class="rs-lbl">Overall Hit Rate</div></div>
+      <div class="retro-stat"><div class="rs-val" style="color:var(--cyan)">${o.total_resolved||0}</div><div class="rs-lbl">Resolved Briefs</div></div>
+      <div class="retro-stat"><div class="rs-val" style="color:var(--green)">${o.validated||0}</div><div class="rs-lbl">Validated</div></div>
+      <div class="retro-stat"><div class="rs-val" style="color:var(--text3)">${o.total_pending||0}</div><div class="rs-lbl">Pending</div></div>
+    </div>
+
+    ${tierRows?`
+    <div style="font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Hit Rate by Confidence Tier</div>
+    <div class="tier-table">
+      <div class="tier-table-row tier-table-head"><span>Tier</span><span>Hit Rate</span><span>Validated</span><span>Resolved</span></div>
+      ${tierRows}
+    </div>`:''}
+
+    <div style="font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Recent Outcomes</div>
+    ${outcomeCards}`;
+}
+
+/* ══════════════════════════════════════════════════════
+   AGENT TRACE PANE
+══════════════════════════════════════════════════════ */
+let traceAgent=null;
+let traceData={};
+const ALL_AGENTS=['STONE','VOSS','MARA','REED','ATLAS','WATT','TIDE','ECHO','LEX','FINN','CARGO','TERRA','DELPHI','GHOST','GRID','PRESSURE','DESK'];
+
+async function fetchTrace(name){
+  if(DEMO){renderTraceData({agent:name,display_name:name,personality:'Demo mode — connect backend to see live trace.',domain_context:'',interval_minutes:30,meta:{total_runs:0,success_rate:null,total_items_fetched:0,total_posts_saved:0},recent_runs:[],recent_posts:[]});return;}
+  const adminKey=prompt('Admin key:');
+  if(!adminKey)return;
+  try{
+    const r=await fetch(`${API}/api/agents/${name}/trace`,{headers:{'X-Admin-Key':adminKey}});
+    if(r.ok){traceData=await r.json();renderTraceData(traceData);}
+    else{document.getElementById('traceResult').innerHTML=`<div class="empty-s"><div class="ei">🔒</div><div class="et">Invalid admin key or agent not found.</div></div>`;}
+  }catch(e){console.warn('Trace fetch failed',e);}
+}
+
+function renderTracePane(){
+  const el=document.getElementById('pane-trace');
+  const opts=ALL_AGENTS.map(a=>`<option value="${a}"${a===traceAgent?'selected':''}>${a}</option>`).join('');
+  el.innerHTML=`
+    <div class="intro-banner" style="background:var(--navy-bg);border-color:rgba(29,78,216,.15)">
+      <div class="ib-title" style="color:var(--navy)">Agent Observability Trace</div>
+      <div class="ib-body" style="color:var(--text2)">Full execution trace per agent: run history, success rate, items fetched vs posted, domain context, and recent intelligence output. Requires admin key.</div>
+    </div>
+    <select class="agent-sel" id="agentSel" onchange="traceAgent=this.value">${opts}</select>
+    <button class="wl-save" style="margin-bottom:14px;background:var(--navy)" onclick="traceAgent=document.getElementById('agentSel').value;fetchTrace(traceAgent)">Load Trace</button>
+    <div id="traceResult">${traceData.agent?renderTraceDataHtml(traceData):''}</div>`;
+}
+
+function renderTraceData(data){
+  traceData=data;
+  const el=document.getElementById('traceResult');
+  if(el)el.innerHTML=renderTraceDataHtml(data);
+}
+
+function renderTraceDataHtml(data){
+  const m=data.meta||{};
+  const runs=(data.recent_runs||[]).slice(0,10);
+  const posts=(data.recent_posts||[]).slice(0,5);
+  const successPct=m.success_rate!=null?`${Math.round(m.success_rate*100)}%`:'—';
+  const effPct=m.efficiency_rate!=null?`${Math.round(m.efficiency_rate*100)}%`:'—';
+
+  const runRows=runs.length?runs.map(r=>{
+    const status=r.status||'unknown';
+    return`<div class="trace-run-row">
+      <div class="run-status ${status}"></div>
+      <span style="color:var(--text2);font-size:.75rem">${status}</span>
+      <span class="run-found">${r.items_found||0} fetched → ${r.items_posted||0} posted</span>
+      ${r.error?`<span style="color:var(--red);font-size:.7rem">${san(r.error)}</span>`:''}
+      <span class="run-time">${ago(r.completed_at||r.started_at)}</span>
+    </div>`;
+  }).join(''):
+  `<div style="font-size:.75rem;color:var(--text3);padding:8px 0">No runs recorded yet.</div>`;
+
+  const postCards=posts.length?posts.map(p=>`<div style="border-bottom:1px solid var(--border);padding:10px 0;font-size:.78rem;color:var(--text2)"><div style="font-weight:600;color:var(--text);margin-bottom:3px">${san((p.body||'').substring(0,80))}…</div><span style="font-family:var(--mono);font-size:.65rem;color:var(--text3)">${ago(p.timestamp)} · conf ${Math.round((p.confidence||0)*100)}%</span></div>`).join(''):
+  `<div style="font-size:.75rem;color:var(--text3)">No recent posts.</div>`;
+
+  return`<div class="trace-panel">
+    <div class="trace-header">
+      <div class="trace-agent-name">${san(data.display_name||data.agent)} <span style="font-size:.7rem;font-weight:400;color:var(--text3)">every ${data.interval_minutes}min</span></div>
+    </div>
+    <div class="trace-meta-grid">
+      <div class="trace-meta-cell"><div class="tmc-val">${m.total_runs||0}</div><div class="tmc-lbl">Total Runs</div></div>
+      <div class="trace-meta-cell"><div class="tmc-val" style="color:${m.success_rate>=0.9?'var(--green)':'var(--gold)'}">${successPct}</div><div class="tmc-lbl">Success Rate</div></div>
+      <div class="trace-meta-cell"><div class="tmc-val" style="color:var(--cyan)">${effPct}</div><div class="tmc-lbl">Post Efficiency</div></div>
+    </div>
+    ${data.domain_context?`<div class="trace-domain">${san(data.domain_context)}</div>`:''}
+    ${data.personality?`<div class="trace-domain" style="font-style:italic;color:var(--text3)">"${san(data.personality)}"</div>`:''}
+    <div class="trace-runs">
+      <div style="font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Recent Runs</div>
+      ${runRows}
+    </div>
+    <div class="trace-runs" style="border-top:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Recent Posts</div>
+      ${postCards}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   SSE LIVE FEED
+══════════════════════════════════════════════════════ */
+let sseConn=null;
+function connectSSE(){
+  if(DEMO||sseConn)return;
+  try{
+    sseConn=new EventSource(`${API}/api/stream`);
+    sseConn.addEventListener('connected',()=>{
+      document.getElementById('liveDot').classList.add('connected');
+      document.getElementById('liveLabel').textContent='live';
+    });
+    sseConn.addEventListener('agent_run',e=>{
+      const d=JSON.parse(e.data);
+      // Flash the analyst avatar
+      const avEl=document.querySelector(`.av-wrap[data-agent="${d.agent}"] .av`);
+      if(avEl){avEl.style.boxShadow='0 0 0 4px rgba(0,180,216,.4)';setTimeout(()=>{avEl.style.boxShadow='';},1500);}
+      // Silently refresh data
+      fetchLive();
+    });
+    sseConn.addEventListener('stats_update',e=>{
+      const d=JSON.parse(e.data);
+      if(d.analyst_activity)activity=d.analyst_activity;
+      updateSysbar();
+    });
+    sseConn.onerror=()=>{
+      document.getElementById('liveDot').classList.remove('connected');
+      document.getElementById('liveLabel').textContent='offline';
+      sseConn=null;
+      setTimeout(connectSSE,15000); // Reconnect in 15s
+    };
+  }catch(e){}
+}
+
+/* ── INIT ── */
+updateSysbar();
+buildAbar();
+renderWire();
+updateAuthUI();
+if(authToken)loadWatchlist();
+connectSSE();
+setInterval(()=>{if(!DEMO)fetchLive();},120000);
+</script>
+</body>
+</html>
