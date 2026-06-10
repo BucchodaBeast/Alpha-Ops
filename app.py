@@ -317,12 +317,7 @@ def get_runs():
 
 @app.route('/')
 def index():
-    return jsonify({
-        'service': 'Alpha Ops Intelligence Platform',
-        'version': '2.0',
-        'status': 'operational',
-        'docs': '/api/health',
-    })
+    return send_from_directory('static', 'index.html')
 
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
